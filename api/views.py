@@ -1,10 +1,26 @@
 from django.shortcuts import get_object_or_404
+from django.contrib import auth
 from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
-from .models import Questions, Answers
+from .models import Questions, Answers, User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
+
+@api_view(['POST'])
+def login_view(request):
+    if request.method == 'POST':
+        email = request.data['email']
+        password = request.data['password']
+
+        user = auth.authenticate(email=email, password=password)
+        
+        if user is None:
+            return Response({"message": "Invalid Credentials"})
+
+    return Response({
+        "message": "success",
+    })
 
 @api_view(['POST'])
 def signup_view(request):

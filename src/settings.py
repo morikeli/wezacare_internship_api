@@ -59,6 +59,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'src.wsgi.application'
 
+AUTH_USER_MODEL = 'api.User'    # user model used by api app. 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

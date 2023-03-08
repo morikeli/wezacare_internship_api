@@ -1,6 +1,11 @@
 from rest_framework import serializers
-from .models import Questions, Answers
+from .models import Questions, Answers, User
 
+
+class UserSignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
 
 class QuestionsSerializer(serializers.ModelSerializer):
     class Meta:

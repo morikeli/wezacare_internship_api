@@ -28,9 +28,13 @@ def login_view(request):
 
     token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
 
-    return Response({
-        "jwt": token
-    })
+    response = Response()
+    response_data = {'jwt': token}
+
+    # store token as a cookies
+    response.set_cookie(key='jwt', value=token, httponly=True)
+
+    return response
 
 @api_view(['POST'])
 def signup_view(request):

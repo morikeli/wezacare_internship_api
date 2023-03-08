@@ -1,9 +1,51 @@
 from django.shortcuts import get_object_or_404
-from .serializers import QuestionsSerializer, AnswersSerializer
-from .models import Questions, Answers
+from django.contrib import auth
+from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
+from .models import Questions, Answers, User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from datetime import datetime, timedelta
+import jwt
+
+
+@api_view(['POST'])
+def login_view(request):
+    if request.method == 'POST':
+        email = request.data['email']
+        password = request.data['password']
+
+        user = auth.authenticate(email=email, password=password)
+        
+        if user is None:
+            return Response({"message": "Invalid Credentials"})
+
+    payload = {
+        "id": user.id,
+        "exp": datetime.utcnow() + timedelta(minutes=60),    # token expires after 1 hour.
+        "iat": datetime.utcnow()
+    }
+
+    token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+
+    response = Response()
+    response.data = {'jwt': token}
+
+    # store token as a cookies
+    response.set_cookie(key='jwt', value=token, httponly=True)
+
+    return response
+
+@api_view(['POST'])
+def signup_view(request):
+    if request.method == 'POST':
+        serializer = UserSignupSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response()
 
 
 @api_view(['GET', 'POST'])

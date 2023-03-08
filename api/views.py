@@ -5,6 +5,8 @@ from .models import Questions, Answers, User
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from datetime import datetime, timedelta
+import jwt
 
 
 @api_view(['POST'])
@@ -18,8 +20,16 @@ def login_view(request):
         if user is None:
             return Response({"message": "Invalid Credentials"})
 
+    payload = {
+        "id": user.id,
+        "exp": datetime.utcnow() + timedelta(minutes=60),    # token expires after 1 hour.
+        "iat": datetime.utcnow()
+    }
+
+    token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+
     return Response({
-        "message": "success",
+        "jwt": token
     })
 
 @api_view(['POST'])

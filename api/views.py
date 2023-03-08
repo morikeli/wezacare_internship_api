@@ -114,3 +114,15 @@ def update_answers_view(request, questionID, answerID):
         answ.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['GET', 'POST'])
+def logout_user_view(request):
+    response = Response()
+
+    if request.method == 'POST':
+        response.delete_cookie('jwt')
+    
+    response.data = {
+        "message": "User logged out ..."
+    }
+    return response
+

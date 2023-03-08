@@ -53,7 +53,7 @@ def post_answers_view(request, questionID):
 
             return Response(serializer.data)
 
-@api_view(['PUT'])
+@api_view(['PUT', 'DELETE'])
 def update_answers_view(request, questionID, answerID):
     answ = Answers.objects.get(author_id=questionID)
 
@@ -65,4 +65,8 @@ def update_answers_view(request, questionID, answerID):
             return Response(serializer.data)
         
         return Response(serializer.errors)
+    
+    elif request.method == 'DELETE':
+        answ.delete()
+
 

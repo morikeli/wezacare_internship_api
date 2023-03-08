@@ -29,7 +29,7 @@ def login_view(request):
     token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
 
     response = Response()
-    response_data = {'jwt': token}
+    response.data = {'jwt': token}
 
     # store token as a cookies
     response.set_cookie(key='jwt', value=token, httponly=True)

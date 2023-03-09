@@ -30,6 +30,13 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -60,8 +67,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'src.wsgi.application'
-
-AUTH_USER_MODEL = 'api.User'    # user model used by api app. 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -118,3 +123,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:8000",
 ]
+
+AUTH_USER_MODEL = 'api.user'

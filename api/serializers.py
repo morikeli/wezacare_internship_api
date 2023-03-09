@@ -23,7 +23,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
 class QuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Questions
-        fields = ['id', 'author', 'question', 'posted', 'edited']
+        fields = '__all__'
 
 
 class AnswersSerializer(serializers.ModelSerializer):

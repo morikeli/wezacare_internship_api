@@ -15,10 +15,10 @@ import jwt
 
 class LoginView(APIView):
     def post(self, request):
-        email = request.data['email']
+        username = request.data['username']
         password = request.data['password']
 
-        user = auth.authenticate(email=email, password=password)
+        user = auth.authenticate(username=username, password=password)
         
         if user is None:
             raise AuthenticationFailed('INVALID CREDENTIALS!!!')
@@ -56,28 +56,47 @@ class QuestionsView(APIView):
 
         return Response(serializer.data)
 
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-
     def post(self, request):
-        serializer = QuestionsSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(author=request.user)
+        authentication_classes = [BasicAuthentication]
+        permission_classes = [IsAuthenticated]
+        
+        if request.user.is_authenticated:
+            serializer = QuestionsSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(author=request.user)
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response({"AnonymousUser. Please login to post question."})
 
 
-@api_view(['GET', 'DELETE'])
-def get_selected_question_view(request, questionID):
-    quiz = get_object_or_404(Questions, id=questionID)
+class get_or_delete_QuestionsView(APIView):
+    def get_quiz(self, questionID):
+        try:
+            return Questions.objects.get(id=questionID)
+        except Questions.DoesNotExist:
+            return Response(data={"No data available"}, status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
-        serializer = QuestionsSerializer(quiz)
-
+    
+    def get(self, request, questionID):
+        # quiz = self.get_quiz(questionID)
+        serializer = QuestionsSerializer(self.get_quiz(questionID))
         return Response(serializer.data)
 
-    elif request.method == 'DELETE':
-        quiz.delete()
+    
+    def delete(self, request, questionID):
+        authentication_classes = [BasicAuthentication]
+        permission_classes = [IsAuthenticated]
+        
+        quiz = self.get_quiz(questionID)
+
+        if request.user == quiz.author:
+            quiz.delete()
+            return Response({"You deleted this question!"}, status=status.HTTP_204_NO_CONTENT)
+
+        else:
+           return Response({"message": "You cannot delete this question"}, status=status.HTTP_403_FORBIDDEN)
+
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -119,7 +138,7 @@ def update_answers_view(request, questionID, answerID):
 
 
 class LogoutUserView(APIView):
-    def get(self, request):
+    def post(self, request):
         response = Response()
         response.delete_cookie('jwt')
         response.data = {"message": "User logged out ..."}

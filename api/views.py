@@ -56,26 +56,24 @@ class QuestionsView(APIView):
 
         return Response(serializer.data)
 
+    # Use BaseAuthentication System (i.e. username and password) to authenticate user and check whether s/he is authenticated (IsAuthenticated)
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request):
-        authentication_classes = [BasicAuthentication]
-        permission_classes = [IsAuthenticated]
-        
-        if request.user.is_authenticated:
-            serializer = QuestionsSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(author=request.user)
+        serializer = QuestionsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response({"AnonymousUser. Please login to post question."})
-
+        # return Response({"AnonymousUser. Please login to post question."})
 
 class get_or_delete_QuestionsView(APIView):
     def get_quiz(self, questionID):
         try:
             return Questions.objects.get(id=questionID)
         except Questions.DoesNotExist:
-            return Response(data={"No data available"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     
     def get(self, request, questionID):
@@ -83,11 +81,9 @@ class get_or_delete_QuestionsView(APIView):
         serializer = QuestionsSerializer(self.get_quiz(questionID))
         return Response(serializer.data)
 
-    
-    def delete(self, request, questionID):
-        authentication_classes = [BasicAuthentication]
-        permission_classes = [IsAuthenticated]
-        
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, questionID):        
         quiz = self.get_quiz(questionID)
 
         if request.user == quiz.author:
@@ -99,25 +95,26 @@ class get_or_delete_QuestionsView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class SendAnswersView(APIView):
+    def get_quiz(self, questionID):
+        try:
+            return Questions.objects.get(id=questionID)
+        except Questions.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+    def get(self, request, questionID):
+        serializer = QuestionsSerializer(self.get_quiz(questionID))
+        return Response(serializer.data)
 
-@api_view(['GET', 'POST'])
-def post_answers_view(request, questionID):
-    quiz = get_object_or_404(Questions, id=questionID)
-
-    if request.method == 'GET':
-        post_answer = Answers.objects.get(author_id=quiz)
-        serializer = AnswersSerializer(post_answer)
-
+    # Checks if the user is authenticated. BasicAuthentication is the default authentication system.
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    def post(self, request, questionID):
+        serializer = AnswersSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(author_id=questionID)    # author is the current logged in user.
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    elif request.method == 'POST':
-        answer_obj = Answers.objects.get(author_id=quiz)
-        serializer = AnswersSerializer(answer_obj, data=request.data)
 
-        if serializer.is_valid():
-            serializer.save()
-
-            return Response(serializer.data)
 
 @api_view(['PUT', 'DELETE'])
 def update_answers_view(request, questionID, answerID):

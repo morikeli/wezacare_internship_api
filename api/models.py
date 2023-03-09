@@ -1,12 +1,14 @@
 from django.contrib.auth.models import AbstractUser
+from django.conf import settings
 from django.db import models
 
 class User(AbstractUser):
-    username = models.CharField(max_length=150, blank=False)
-    email = models.EmailField(unique=True)
+    id = models.CharField(max_length=10, primary_key=True, unique=True, editable=False)
+    username = models.CharField(max_length=150, blank=False, unique=True)
+    email = models.EmailField(unique=True, blank=False)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []
 
 
 class Questions(models.Model):

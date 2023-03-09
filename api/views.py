@@ -3,12 +3,50 @@ from django.contrib import auth
 from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
 from .models import Questions, Answers
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import AuthenticationFailed
 from datetime import datetime, timedelta
 import jwt
+
+
+class LoginView(APIView):
+    def post(self, request):
+        email = request.data['email']
+        password = request.data['password']
+
+        user = auth.authenticate(email=email, password=password)
+        
+        if user is None:
+            raise AuthenticationFailed('INVALID CREDENTIALS!!!')
+
+        payload = {
+            "id": user.id,
+            "exp": datetime.utcnow() + timedelta(minutes=60),    # token expires after 1 hour.
+            "iat": datetime.utcnow()
+        }
+
+        token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+
+        response = Response()
+        response.data = {'jwt': token}
+
+        # store token as a cookies
+        response.set_cookie(key='jwt', value=token, httponly=True)
+
+        return response
+
+
+class SignupView(APIView):
+    def post(self, request):
+        serializer = UserSignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'POST'])

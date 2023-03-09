@@ -29,6 +29,7 @@ class Questions(models.Model):
 class Answers(models.Model):
     id = models.CharField(max_length=10, primary_key=True, editable=False, unique=True)
     author = models.ForeignKey(Questions, on_delete=models.CASCADE, editable=False)
+    answered_by = models.ForeignKey(User, on_delete=models.CASCADE, editable=False)
     answer = models.TextField(blank=False)
     posted = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)

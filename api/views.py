@@ -49,23 +49,20 @@ class SignupView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['GET', 'POST'])
-@authentication_classes([BasicAuthentication])
-@permission_classes([IsAuthenticated])
-def get_all_questions_view(request):
-    if request.method == 'GET':
-        questions = Questions.objects.all()
-        serializer = QuestionsSerializer(questions, many=True)
-    
+class QuestionsView(APIView):
+    def get(self, request):
+        quiz = Questions.objects.all()
+        serializer = QuestionsSerializer(quiz, many=True)
 
-    elif request.method == 'POST':
+        return Response(serializer.data)
+
+    def post(self, request):
         serializer = QuestionsSerializer(data=request.data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer.is_valid(raise_exception=True)
+        print(f'Instance: {serializer.instance}')
+        serializer.save()
 
-    return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'DELETE'])

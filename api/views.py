@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib import auth
 from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
 from .models import Questions, Answers
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -32,7 +31,7 @@ class LoginView(APIView):
         token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
 
         response = Response()
-        response.data = {'jwt': token}
+        response.data = {"User logged in ..."}
 
         # store token as a cookies
         response.set_cookie(key='jwt', value=token, httponly=True)
@@ -112,26 +111,44 @@ class SendAnswersView(APIView):
     def post(self, request, questionID):
         serializer = AnswersSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(author_id=questionID)    # author is the current logged in user.
+        serializer.save(author_id=questionID, answered_by=request.user)    # author is the current logged in user.
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-@api_view(['PUT', 'DELETE'])
-def update_answers_view(request, questionID, answerID):
-    answ = Answers.objects.get(author_id=questionID)
+class UpdateAndDeleteAnswersView(APIView):
+    def get_answer(self, questionID, answerID):
+        try:
+            return Answers.objects.get(id=answerID)
+        
+        except Answers.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'PUT':
-        serializer = AnswersSerializer(answ, data=request.data)
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def put(self, request, questionID, answerID):
+        answ_obj = self.get_answer(questionID, answerID)
 
-        if serializer.is_valid():
+        if request.user == answ_obj.answered_by:
+            answer_obj = Answers.objects.get(id=answerID, answered_by=request.user)
+            serializer = AnswersSerializer(answer_obj, data=request.data)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
+
             return Response(serializer.data)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"ERROR: You cannot delete this message!"}, status=status.HTTP_403_FORBIDDEN)
     
-    elif request.method == 'DELETE':
-        answ.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, questionID, answerID):
+        answ = self.get_answer(questionID, answerID)
+
+        if request.user == answ.answered_by:
+            answ.delete()
+            return Response({"You deleted this answer!"}, status=status.HTTP_204_NO_CONTENT)
+
+        else:
+            return Response({"You are not authorized to delete this answer"}, status=status.HTTP_403_FORBIDDEN)
 
 
 class LogoutUserView(APIView):

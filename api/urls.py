@@ -7,7 +7,7 @@ urlpatterns = [
     path('questions', views.QuestionsView.as_view(), name='all_questions'),
     path('questions/<str:questionID>', views.get_or_delete_QuestionsView.as_view(), name='selected_question'),
     path('questions/<str:questionID>/answers', views.SendAnswersView.as_view(), name='post_answer'),
-    path('questions/<str:questionID>/answers/<str:answerID>', views.update_answers_view, name='update_answer'),
+    path('questions/<str:questionID>/answers/<str:answerID>', views.UpdateAndDeleteAnswersView.as_view(), name='update_answer'),
     path('logout/', views.LogoutUserView.as_view(), name='user_logout'),
     
 

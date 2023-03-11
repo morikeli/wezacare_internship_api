@@ -49,7 +49,7 @@ class SignupView(APIView):
 
 
 class QuestionsView(APIView):
-    def get(self, request):
+    def get(self, request):     # a given user can get all the questions asked.
         quiz = Questions.objects.all()
         serializer = QuestionsSerializer(quiz, many=True)
 
@@ -59,7 +59,7 @@ class QuestionsView(APIView):
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
     
-    def post(self, request):
+    def post(self, request):    # an authenticated user can post a question
         serializer = QuestionsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
@@ -69,6 +69,7 @@ class QuestionsView(APIView):
 
 class get_or_delete_QuestionsView(APIView):
     def get_quiz(self, questionID):
+        # search for a question using an ID assigned to that question.
         try:
             return Questions.objects.get(id=questionID)
         except Questions.DoesNotExist:
@@ -82,7 +83,7 @@ class get_or_delete_QuestionsView(APIView):
 
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
-    def delete(self, request, questionID):        
+    def delete(self, request, questionID):        # only authenticated authors can delete a question they posted.
         quiz = self.get_quiz(questionID)
 
         if request.user == quiz.author:
@@ -96,6 +97,8 @@ class get_or_delete_QuestionsView(APIView):
 
 class SendAnswersView(APIView):
     def get_quiz(self, questionID):
+        # search for a question using an ID assigned to that question.
+        # if the question exists, an authenticated user can post their response to that question.
         try:
             return Questions.objects.get(id=questionID)
         except Questions.DoesNotExist:
@@ -117,12 +120,14 @@ class SendAnswersView(APIView):
 
 class UpdateAndDeleteAnswersView(APIView):
     def get_answer(self, questionID, answerID):
+        # search for an answer using an ID assigned to that answer.
         try:
             return Answers.objects.get(id=answerID)
         
         except Answers.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    # only authenticated authors can update answers they posted.
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
     
@@ -140,6 +145,7 @@ class UpdateAndDeleteAnswersView(APIView):
         else:
             return Response({"ERROR: You cannot delete this message!"}, status=status.HTTP_403_FORBIDDEN)
     
+    # only authenticated authors can delete answers they posted.
     def delete(self, request, questionID, answerID):
         answ = self.get_answer(questionID, answerID)
 

@@ -27,3 +27,29 @@ following endpoints:
 
 ![endpoint2](https://user-images.githubusercontent.com/78599959/223394184-9da4d47e-97f8-4e58-ac97-e59bdc14c810.png)
 
+
+### User guide
+#### Overview
+The API was developed using django REST framework.
+#### 1. Project structure
+The base directory contains the following files and folders:
+    - project folder (src)
+    - app folder (api)
+    - virtual environment (.venv)
+    - database (db.sqlite3)
+    - README.md
+    - requirements.txt
+
+#### 2. Setup
+- This API was developed on Linux (Debian). The project has a virtual environment with all modules used to developed the API. 
+
+    1. Clone this repo to your desktop
+    2. Activate the virtual environment by typing the command shown below on your terminal
+
+    3. Activate production server using the following command:
+
+
+
+### 3. Authentication
+Basic authentication is the system used by this API to validate/authenticate a user. A user must create an account using his/her email and password.
+

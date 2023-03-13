@@ -47,7 +47,6 @@ class SignupView(APIView):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
 class QuestionsView(APIView):
     def get(self, request):     # a given user can get all the questions asked.
         quiz = Questions.objects.all()
@@ -58,14 +57,11 @@ class QuestionsView(APIView):
     # Use BaseAuthentication System (i.e. username and password) to authenticate user and check whether s/he is authenticated (IsAuthenticated)
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
-    
     def post(self, request):    # an authenticated user can post a question
         serializer = QuestionsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        # return Response({"AnonymousUser. Please login to post question."})
 
 class get_or_delete_QuestionsView(APIView):
     def get_quiz(self, questionID):
@@ -74,7 +70,6 @@ class get_or_delete_QuestionsView(APIView):
             return Questions.objects.get(id=questionID)
         except Questions.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
     
     def get(self, request, questionID):
         # quiz = self.get_quiz(questionID)
@@ -117,7 +112,6 @@ class SendAnswersView(APIView):
         serializer.save(author_id=questionID, answered_by=request.user)    # author is the current logged in user.
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
 class UpdateAndDeleteAnswersView(APIView):
     def get_answer(self, questionID, answerID):
         # search for an answer using an ID assigned to that answer.
@@ -130,7 +124,6 @@ class UpdateAndDeleteAnswersView(APIView):
     # only authenticated authors can update answers they posted.
     authentication_classes = [BasicAuthentication]
     permission_classes = [IsAuthenticated]
-    
     def put(self, request, questionID, answerID):
         answ_obj = self.get_answer(questionID, answerID)
 
@@ -143,9 +136,11 @@ class UpdateAndDeleteAnswersView(APIView):
             return Response(serializer.data)
         
         else:
-            return Response({"ERROR: You cannot delete this message!"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"ERROR: You cannot update this answer"}, status=status.HTTP_403_FORBIDDEN)
     
     # only authenticated authors can delete answers they posted.
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
     def delete(self, request, questionID, answerID):
         answ = self.get_answer(questionID, answerID)
 
@@ -156,7 +151,6 @@ class UpdateAndDeleteAnswersView(APIView):
         else:
             return Response({"You are not authorized to delete this answer"}, status=status.HTTP_403_FORBIDDEN)
 
-
 class LogoutUserView(APIView):
     def post(self, request):
         response = Response()
@@ -165,4 +159,3 @@ class LogoutUserView(APIView):
 
         return response
     
-

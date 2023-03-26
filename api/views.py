@@ -1,7 +1,5 @@
 from django.shortcuts import get_object_or_404
 from django.contrib import auth
-from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
-from .models import Questions, Answers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -9,45 +7,19 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer, LoginSerializer
+from .models import Questions, Answers
 from datetime import datetime, timedelta
 import jwt
 
 
 class LoginView(APIView):
     def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        user = auth.authenticate(username=email, password=password)
-        
-        if user is None:
-            raise AuthenticationFailed('INVALID CREDENTIALS!! Please try again later.')
-
-        refresh = RefreshToken.for_user(user)
-
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            
-        }
-
-        return Response()
-
-        # payload = {
-        #     "id": user.id,
-        #     "exp": datetime.utcnow() + timedelta(minutes=60),    # token expires after 1 hour.
-        #     "iat": datetime.utcnow()
-        # }
-
-        # token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-
-        # response = Response()
-        # response.data = {"User logged in ..."}
-
-        # # store token as a cookies
-        # response.set_cookie(key='jwt', value=token, httponly=True)
-
-        # return response
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class SignupView(APIView):

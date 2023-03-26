@@ -6,7 +6,9 @@ from rest_framework import status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer, LoginSerializer
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
 from .models import Questions, Answers
 from datetime import datetime, timedelta
 import jwt
@@ -14,11 +16,21 @@ import jwt
 
 class LoginView(APIView):
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        email = request.data['email']
+        password = request.data['password']
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = auth.authenticate(email=email, password=password)
+        
+        if user is None:
+            raise AuthenticationFailed('INVALID CREDENTIALS!! Please try again later.')
+        
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'data': {"email": email, "username": user.username},
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_200_OK)
 
 
 class SignupView(APIView):

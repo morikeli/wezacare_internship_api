@@ -1,35 +1,43 @@
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from .models import User
+from .models import User, Questions
 import jwt
 from datetime import datetime, timedelta
 
-class TestSetup(APITestCase):
+
+class SignUpTestCase(APITestCase):
     def setUp(self):
-        self.register_url = reverse('signup')
-        self.login_url = reverse('user_login')
-        self.questions_url = '/questions/'+"5BAD9524B2"
-
+        self.signup_url = reverse('signup')
         self.user_data = {
-            "email": "testuser@gmail.com",
             "username": "testuser",
-            "password": "morikeli",
-            # "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjNDQzExNEQ4NkEiLCJleHAiOjE2Nzg4MDM5MzksImlhdCI6MTY3ODgwMDMzOX0.\
-            # gfrtNLFOkYEslJbOX99IWXTCZT4OMpvgWvnok2I6lkI"
-            
+            "email": "testuser@gmail.com",
+            "password": "morikeli"
         }
+    
+    def test_signup(self):
+        res = self.client.post(self.signup_url, self.user_data)
+        self.assertEqual(res.status_code, 201)
 
+class QuestionsTestCase(APITestCase):
+    def setUp(self):
+        self.get_all_questions_url = reverse('all_questions')
+        # self.questions_id_url = reverse('get_question', "api.urls")
+        self.user_data = {
+            "username": "testuser",
+            "password": "morikeli"
+        }
         self.questions_data = {
             "id": "5BAD9524B2",
             "author": "3CC114D86A",
-            "question": "Question 2",
+            "question": "TestCase question ..." 
         }
-    
-        return super().setUp()
 
-    def test_signup(self):
-        res = self.client.post(self.register_url, self.user_data)
-        import pdb
-        pdb.set_trace()
-        self.assertEqual(res.status_code, 201)
-    
+    def test_get_all_questions(self):
+        res = self.client.get('/questions/'+ self.questions_data["id"])
+        self.assertEqual(res.status_code, 200)
+
+    # def test_author_can_delete_questions(self):
+    #     res = self.client.delete(self.questions_url, self.user_data, format='json')
+    #     # import pdb; pdb.set_trace()
+    #     self.assertEqual(res.status_code, 403)
+

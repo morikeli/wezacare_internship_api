@@ -8,35 +8,46 @@ from rest_framework import status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import datetime, timedelta
 import jwt
 
 
 class LoginView(APIView):
     def post(self, request):
-        username = request.data['username']
+        email = request.data['email']
         password = request.data['password']
 
-        user = auth.authenticate(username=username, password=password)
+        user = auth.authenticate(username=email, password=password)
         
         if user is None:
-            raise AuthenticationFailed('INVALID CREDENTIALS!!!')
+            raise AuthenticationFailed('INVALID CREDENTIALS!! Please try again later.')
 
-        payload = {
-            "id": user.id,
-            "exp": datetime.utcnow() + timedelta(minutes=60),    # token expires after 1 hour.
-            "iat": datetime.utcnow()
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            
         }
 
-        token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
+        return Response()
 
-        response = Response()
-        response.data = {"User logged in ..."}
+        # payload = {
+        #     "id": user.id,
+        #     "exp": datetime.utcnow() + timedelta(minutes=60),    # token expires after 1 hour.
+        #     "iat": datetime.utcnow()
+        # }
 
-        # store token as a cookies
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        # token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
 
-        return response
+        # response = Response()
+        # response.data = {"User logged in ..."}
+
+        # # store token as a cookies
+        # response.set_cookie(key='jwt', value=token, httponly=True)
+
+        # return response
 
 
 class SignupView(APIView):

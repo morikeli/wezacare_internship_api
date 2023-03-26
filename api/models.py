@@ -6,8 +6,9 @@ class User(AbstractUser):
     id = models.CharField(max_length=10, primary_key=True, unique=True, editable=False)
     username = models.CharField(max_length=150, blank=False, unique=True)
     email = models.EmailField(unique=True, blank=False)
+    updated = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
 

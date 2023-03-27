@@ -11,7 +11,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
 from .models import Questions, Answers
 from datetime import datetime, timedelta
-import jwt
 
 
 class LoginView(APIView):

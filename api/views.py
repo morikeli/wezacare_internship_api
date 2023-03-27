@@ -10,7 +10,6 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import QuestionsSerializer, AnswersSerializer, UserSignupSerializer
 from .models import Questions, Answers
-from datetime import datetime, timedelta
 
 
 class LoginView(APIView):

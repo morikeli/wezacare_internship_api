@@ -43,7 +43,7 @@ The base directory contains the following files and folders:
 - This API was developed on Linux (Debian). The project has a virtual environment with all modules used to developed the API. 
 
     1. Clone this repo to your desktop
-    2. Activate the virtual environment by typing the command shown below on your terminal
+    2. Create a  virtual environment using the command "python -m venv .venv" and activate by typing the command shown below on your terminal
     ![env](https://user-images.githubusercontent.com/78599959/224482184-809978c7-52c2-4ab5-b5a0-06871e33b958.png)
 
     3. Activate production server using the following command:

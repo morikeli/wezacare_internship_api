@@ -35,7 +35,6 @@ The API was developed using django REST framework.
 The base directory contains the following files and folders:
     - project folder (src)
     - app folder (api)
-    - virtual environment (.venv)
     - database (db.sqlite3)
     - README.md
     - requirements.txt
